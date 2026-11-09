@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>cpsd.site</title>
+<title>Home - Cambridge Public Schools</title>
+<link rel="icon" href="https://resources.finalsite.net/images/v1760020964/cpsdus/gdmvvvlr7skvmz793r1t/favicon-1.png">
 <meta name="robots" content="noindex">
 <noscript><meta http-equiv="refresh" content="0; url=https://www.cpsd.us/"></noscript>
 <style>
@@ -35,6 +36,11 @@
   try { sessionStorage.setItem('empires', want); } catch (e) {}
   history.replaceState(null, '', '/');
 
+  // Leaving the tab and coming back to it lands on cpsd.us. The game's place stays remembered for the next visit.
+  addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') location.replace(HOME + '/');
+  });
+
   addEventListener('message', function (e) {
     if (e.origin !== GAME || !e.data || e.data.empires !== 'location' || !isPath(e.data.url)) return;
     try { sessionStorage.setItem('empires', e.data.url); } catch (err) {}
@@ -43,7 +49,7 @@
   addEventListener('DOMContentLoaded', function () {
     var f = document.createElement('iframe');
     f.src = GAME + want;
-    f.title = 'EMPIRES';
+    f.title = 'Cambridge Public Schools';
     f.allow = 'fullscreen; clipboard-write; autoplay';
     f.allowFullscreen = true;
     f.onload = function () { try { f.contentWindow.focus(); } catch (e) {} };

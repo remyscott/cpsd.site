@@ -8,6 +8,9 @@ The root page does two jobs:
   the query from the address, remembers the game's location in sessionStorage (the game reports moves with
   postMessage) and comes back to it on reload. A new tab with no memory goes to cpsd.us as usual.
 
+The tab carries cpsd.us's title and favicon (linked from their site, so it follows theirs), and switching away from the
+tab and back to it sends the tab to cpsd.us; the remembered location still brings the next visit back to the game.
+
 Recursion is prevented twice: the Empires server redirects only top-level navigations (Sec-Fetch-Dest: document), not
 loads inside a frame, and this page, if it is ever framed, opens the game directly instead of itself.
 
