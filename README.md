@@ -1,7 +1,19 @@
 # cpsd.site
 
-Redirects every path on cpsd.site to the same path on https://www.cpsd.us.
-Served by GitHub Pages; `404.html` is the same page so unknown paths redirect too.
+The root page does two jobs:
+
+- A plain visit to any path redirects to the same path on https://www.cpsd.us.
+- A visit that carries `?p=/some/path` (how the Empires server sends people who open empires.cpsd.site directly) shows
+  https://empires.cpsd.site/some/path in a full-window iframe, so the address bar reads cpsd.site. The page then drops
+  the query from the address, remembers the game's location in sessionStorage (the game reports moves with
+  postMessage) and comes back to it on reload. A new tab with no memory goes to cpsd.us as usual.
+
+Recursion is prevented twice: the Empires server redirects only top-level navigations (Sec-Fetch-Dest: document), not
+loads inside a frame, and this page, if it is ever framed, opens the game directly instead of itself.
+
+The Empires service needs `HOSTS={"empires.cpsd.site":{"frame":"https://cpsd.site/"}}` in its environment.
+
+`404.html` is the plain redirect, so unknown paths redirect too. Served by GitHub Pages.
 
 ## DNS (at the registrar for cpsd.site)
 
