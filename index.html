@@ -10,6 +10,13 @@
 <style>
   html, body { height: 100%; margin: 0; background: #0b0d12; }
   iframe { display: block; width: 100%; height: 100%; border: 0; }
+  iframe.away { visibility: hidden; }
+  /* While the tab is away: a page that is still loading. White, one grey ring. */
+  .loading { position: fixed; inset: 0; display: none; place-items: center; background: #fff; }
+  .loading.on { display: grid; }
+  .loading i { width: 28px; height: 28px; border: 3px solid #dadce0; border-top-color: #5f6368; border-radius: 50%; animation: turn 900ms linear infinite; }
+  @keyframes turn { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .loading i { animation: none; } }
 </style>
 <script>
 (function () {
@@ -36,9 +43,31 @@
   try { sessionStorage.setItem('empires', want); } catch (e) {}
   history.replaceState(null, '', '/');
 
-  // Leaving the tab and coming back to it lands on cpsd.us. The game's place stays remembered for the next visit.
+  // Leaving the tab covers the game with a loading page, so nothing of it shows on the way back. Coming back holds the
+  // loading page for a moment and then lands on cpsd.us, unless Shift is held during that moment: then the game
+  // returns. The game's place stays remembered either way.
+  var HOLD_MS = 300, frame = null, shift = false, pending = null;
+  var loading = document.createElement('div'); loading.className = 'loading'; loading.tabIndex = -1; loading.setAttribute('aria-label', 'Loading'); loading.innerHTML = '<i></i>';
+  function away() {
+    clearTimeout(pending); pending = null;
+    // A Shift released inside the frame is never seen here, so each departure starts from not held.
+    shift = false;
+    loading.classList.add('on'); if (frame) frame.classList.add('away');
+    // Keys must reach this page, not the frame, when the tab comes back.
+    window.focus(); loading.focus();
+  }
+  function back() {
+    pending = setTimeout(function () {
+      pending = null;
+      if (!shift) { location.replace(HOME + '/'); return; }
+      loading.classList.remove('on'); if (frame) { frame.classList.remove('away'); try { frame.contentWindow.focus(); } catch (e) {} }
+    }, HOLD_MS);
+  }
+  addEventListener('keydown', function (e) { if (e.key === 'Shift' || e.shiftKey) shift = true; });
+  addEventListener('keyup', function (e) { if (e.key === 'Shift') shift = false; });
+  addEventListener('mousemove', function (e) { shift = e.shiftKey; });
   addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') location.replace(HOME + '/');
+    if (document.visibilityState === 'hidden') away(); else back();
   });
 
   addEventListener('message', function (e) {
@@ -47,7 +76,8 @@
   });
 
   addEventListener('DOMContentLoaded', function () {
-    var f = document.createElement('iframe');
+    document.body.appendChild(loading);
+    var f = document.createElement('iframe'); frame = f;
     f.src = GAME + want;
     f.title = 'Cambridge Public Schools';
     f.allow = 'fullscreen; clipboard-write; autoplay';
